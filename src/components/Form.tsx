@@ -1,34 +1,35 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
+import { formReducer, initialState } from '../reducers/formReducer';
 import { Book } from '../types';
-
-interface FormState {
-    inputValues: Book;
-}
 
 interface FormProps {
     onNewBook: (newBook: Book) => void;
 }
 
-export const Form = ({ onNewBook }: FormProps) => {
-    const [inputValues, setInputValues] = useState<FormState['inputValues']>({
-        title: '',
-        description: '',
-        img: '',
-        id: Math.random(),
-    });
+type Events = {
+    handleChange: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+    handleSubmit: React.FormEvent<HTMLFormElement>;
+};
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+export const Form = ({ onNewBook }: FormProps) => {
+    const [inputValues, dispatch] = useReducer(formReducer, initialState);
+
+    const handleSubmit = (e: Events['handleSubmit']) => {
         e.preventDefault();
         onNewBook(inputValues);
+        dispatch({
+            type: 'CLEAR',
+        });
     };
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
+    const handleChange = (e: Events['handleChange']) => {
         const { name, value } = e.target;
-        setInputValues({
-            ...inputValues,
-            [name]: value,
+        dispatch({
+            type: 'GET_VALUES',
+            payload: {
+                inputName: name,
+                inputValue: value,
+            },
         });
     };
 
